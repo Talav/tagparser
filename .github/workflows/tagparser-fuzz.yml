@@ -1,0 +1,59 @@
+name: "Tagparser Fuzz Testing"
+
+on:
+  schedule:
+    # Run at 2 AM UTC every day
+    - cron: "0 2 * * *"
+  workflow_dispatch: # Allow manual triggering
+    inputs:
+      fuzztime:
+        description: "Fuzz time per function (e.g., 5m, 1h)"
+        required: false
+        default: "10m"
+
+env:
+  GO_VERSION: "1.25.0"
+  MODULE: "."
+
+jobs:
+  fuzz:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        fuzz-test:
+          - FuzzParse
+          - FuzzParseWithName
+          - FuzzParseFunc
+          - FuzzParseFuncWithName
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+
+      - name: Install Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Get fuzz time
+        id: fuzztime
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "time=${{ github.event.inputs.fuzztime }}" >> $GITHUB_OUTPUT
+          else
+            echo "time=10m" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run fuzz test - ${{ matrix.fuzz-test }}
+        working-directory: ${{ env.MODULE }}
+        run: go test -fuzz=${{ matrix.fuzz-test }} -fuzztime=${{ steps.fuzztime.outputs.time }}
+
+      - name: Upload crash artifacts
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: fuzz-failures-${{ matrix.fuzz-test }}
+          path: testdata/fuzz/${{ matrix.fuzz-test }}/
+          if-no-files-found: ignore
