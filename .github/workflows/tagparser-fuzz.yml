@@ -52,7 +52,7 @@ jobs:
 
       - name: Upload crash artifacts
         if: failure()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: fuzz-failures-${{ matrix.fuzz-test }}
           path: testdata/fuzz/${{ matrix.fuzz-test }}/
