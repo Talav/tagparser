@@ -48,7 +48,7 @@ jobs:
 
       - name: Run fuzz test - ${{ matrix.fuzz-test }}
         working-directory: ${{ env.MODULE }}
-        run: go test -fuzz=${{ matrix.fuzz-test }} -fuzztime=${{ steps.fuzztime.outputs.time }}
+        run: go test -fuzz='^${{ matrix.fuzz-test }}$' -fuzztime=${{ steps.fuzztime.outputs.time }}
 
       - name: Upload crash artifacts
         if: failure()
