@@ -267,6 +267,7 @@ func (p *parser) handleUnquoted(c byte) error {
 		}
 		p.start = p.pos + 1
 		p.inValue = false
+		p.key = ""
 	}
 
 	return nil

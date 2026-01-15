@@ -204,6 +204,33 @@ func TestParseFuncWithName_CustomErrorInKey(t *testing.T) {
 	assert.True(t, errors.Is(errType.Cause, errSimulated))
 }
 
+func TestParseFunc_NoEmptyKeys(t *testing.T) {
+	// Regression test for bug found by fuzzing:
+	// Input "0=," was calling callback with empty key
+	tests := []struct {
+		name  string
+		input string
+	}{
+		{"trailing comma after key-value", "0=,"},
+		{"multiple trailing commas", "key=value,,"},
+		{"key-value then empty then item", "a=b,,c"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := ParseFunc(tt.input, func(key, value string) error {
+				if key == "" {
+					t.Errorf("received empty key in ParseFunc for input %q", tt.input)
+				}
+
+				return nil
+			})
+			// Empty items should be skipped, no error
+			require.NoError(t, err)
+		})
+	}
+}
+
 func TestTagTooLarge(t *testing.T) {
 	// Create a tag that exceeds MaxTagLength
 	largeTag := make([]byte, MaxTagLength+1)
