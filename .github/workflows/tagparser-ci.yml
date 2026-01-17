@@ -57,6 +57,7 @@ jobs:
           files: coverage.out
           flags: unit
           fail_ci_if_error: true
+          verbose: true
 
   lint:
     runs-on: ubuntu-latest
