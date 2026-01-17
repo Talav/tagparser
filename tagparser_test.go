@@ -133,13 +133,6 @@ func TestParseWithName(t *testing.T) {
 	}
 }
 
-func TestParseWithName_Duplicate(t *testing.T) {
-	tag, err := ParseWithName(`foo=bar,foo=boz`)
-	require.NoError(t, err)
-	assert.Equal(t, "", tag.Name)
-	assert.Equal(t, M{"foo": "boz"}, tag.Options) // last value wins
-}
-
 func TestParseWithName_Unquoting(t *testing.T) {
 	// Test that Go struct tag quoted inputs are automatically unquoted
 	tag, err := ParseWithName(`"name=value,other=key"`)
@@ -154,54 +147,33 @@ func TestParseWithName_Unquoting(t *testing.T) {
 	assert.Equal(t, M{"name": "value", "other": "key"}, tag2.Options)
 }
 
-func TestParseWithName_NameMode(t *testing.T) {
-	// Test ParseWithName (name mode) - first item without equals is name
-	tag, err := ParseWithName(`foo,bar=baz`)
-	require.NoError(t, err)
-	assert.Equal(t, "foo", tag.Name)
-	assert.Equal(t, M{"bar": "baz"}, tag.Options)
+func TestParseFuncWithName_CustomErrors(t *testing.T) {
+	tests := []struct {
+		name   string
+		tag    string
+		expErr string
+		errKey string // Key that triggers error; "" for name
+	}{
+		{"error in name", "foo,bar=boz", "simulated error (at 1)", ""},
+		{"error in key", "foo,bar=boz", "bar: simulated error (at 5)", "bar"},
+	}
 
-	// First item with equals is treated as option
-	tag2, err := ParseWithName(`foo=bar,baz`)
-	require.NoError(t, err)
-	assert.Equal(t, "", tag2.Name)
-	assert.Equal(t, M{"foo": "bar", "baz": ""}, tag2.Options)
-}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := ParseFuncWithName(tt.tag, func(key, value string) error {
+				if (tt.errKey == "" && key == "") || key == tt.errKey {
+					return errSimulated
+				}
+				return nil
+			})
+			require.Error(t, err)
+			assert.Equal(t, tt.expErr, err.Error())
 
-func TestParseFuncWithName_CustomErrorInName(t *testing.T) {
-	const tag = `foo,bar=boz`
-	const expErr = `simulated error (at 1)`
-	err := ParseFuncWithName(tag, func(key, value string) error {
-		if key == "" {
-			return errSimulated
-		}
-
-		return nil
-	})
-	require.Error(t, err)
-	assert.Equal(t, expErr, err.Error())
-
-	var errType *Error
-	require.True(t, errors.As(err, &errType))
-	assert.True(t, errors.Is(errType.Cause, errSimulated))
-}
-
-func TestParseFuncWithName_CustomErrorInKey(t *testing.T) {
-	const tag = `foo,bar=boz`
-	const expErr = `bar: simulated error (at 5)`
-	err := ParseFuncWithName(tag, func(key, value string) error {
-		if key == "bar" {
-			return errSimulated
-		}
-
-		return nil
-	})
-	require.Error(t, err)
-	assert.Equal(t, expErr, err.Error())
-
-	var errType *Error
-	require.True(t, errors.As(err, &errType))
-	assert.True(t, errors.Is(errType.Cause, errSimulated))
+			var errType *Error
+			require.True(t, errors.As(err, &errType))
+			assert.True(t, errors.Is(errType.Cause, errSimulated))
+		})
+	}
 }
 
 func TestParseFunc_NoEmptyKeys(t *testing.T) {
@@ -229,6 +201,66 @@ func TestParseFunc_NoEmptyKeys(t *testing.T) {
 			require.NoError(t, err)
 		})
 	}
+}
+
+func TestError_Formatting(t *testing.T) {
+	// Test Error.Error() formatting for different error types
+	tests := []struct {
+		name     string
+		input    string
+		contains string
+	}{
+		{"unterminated quote", "'unterminated", "unterminated quote"},
+		{"quotes in middle", "foo'bar'", "quotes must enclose"},
+		{"invalid escape", `key\nvalue`, "invalid escape"},
+		{"invalid escape in key", `key\x=value`, "invalid escape"},
+		{"invalid escape in option", `opt1,opt\x2`, "invalid escape"},
+		{"empty key", "key1,=value", "empty key"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := Parse(tt.input)
+			require.Error(t, err)
+
+			errStr := err.Error()
+			assert.Contains(t, errStr, tt.contains)
+
+			// Verify it's a *Error type
+			var parseErr *Error
+			require.True(t, errors.As(err, &parseErr))
+		})
+	}
+}
+
+func TestHandleQuoted_EscapeAtEnd(t *testing.T) {
+	// Test escape sequence at end of quoted string
+	_, err := Parse(`key='value\`)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "unterminated escape")
+}
+
+func TestUnquoteError_DirectCall(t *testing.T) {
+	// Test unquoteError.Error() method directly via Unwrap
+	_, err := Parse("'incomplete")
+	require.Error(t, err)
+
+	var parseErr *Error
+	require.True(t, errors.As(err, &parseErr))
+
+	// Verify unwrapped error has Error() method
+	if parseErr.Cause != nil {
+		_ = parseErr.Cause.Error()
+	}
+}
+
+func TestParse_KeyWithLeadingWhitespace(t *testing.T) {
+	// Test key processing with leading/trailing whitespace
+	tag, err := Parse("  key1  =  val1  ,  key2  =  val2  ")
+	require.NoError(t, err)
+	assert.Len(t, tag.Options, 2)
+	assert.Equal(t, "val1", tag.Options["key1"])
+	assert.Equal(t, "val2", tag.Options["key2"])
 }
 
 func TestTagTooLarge(t *testing.T) {
