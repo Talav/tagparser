@@ -164,6 +164,7 @@ func TestParseFuncWithName_CustomErrors(t *testing.T) {
 				if (tt.errKey == "" && key == "") || key == tt.errKey {
 					return errSimulated
 				}
+
 				return nil
 			})
 			require.Error(t, err)
