@@ -1,9 +1,11 @@
 # tagparser
 
+[![tag](https://img.shields.io/github/tag/talav/tagparser.svg)](https://github.com/talav/tagparser/releases)
 [![Go Reference](https://pkg.go.dev/badge/github.com/talav/tagparser.svg)](https://pkg.go.dev/github.com/talav/tagparser)
 [![Go Report Card](https://goreportcard.com/badge/github.com/talav/tagparser)](https://goreportcard.com/report/github.com/talav/tagparser)
 [![CI](https://github.com/talav/tagparser/workflows/Tagparser%20CI/badge.svg)](https://github.com/talav/tagparser/actions)
 [![codecov](https://codecov.io/gh/talav/tagparser/graph/badge.svg)](https://codecov.io/gh/talav/tagparser)
+[![License](https://img.shields.io/github/license/talav/tagparser)](./LICENSE)
 
 A high-performance, production-ready parser for Go struct tags with comprehensive error reporting and zero-allocation options.
 
