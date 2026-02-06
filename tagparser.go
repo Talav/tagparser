@@ -50,9 +50,6 @@ import (
 // This limit of 64KB is far larger than any realistic struct tag.
 const MaxTagLength = 1 << 16 // 64KB
 
-// ErrDuplicateKey is returned as Error.Cause for duplicate tag keys.
-var ErrDuplicateKey = errors.New("duplicate option key")
-
 // ErrTagTooLarge is returned when a tag exceeds MaxTagLength.
 var ErrTagTooLarge = errors.New("tag exceeds maximum length")
 
