@@ -1,6 +1,6 @@
 # tagparser
 
-[![tag](https://img.shields.io/github/tag/talav/tagparser.svg)](https://github.com/talav/tagparser/releases)
+[![tag](https://img.shields.io/github/tag/talav/tagparser.svg)](https://github.com/talav/tagparser/tags)
 [![Go Reference](https://pkg.go.dev/badge/github.com/talav/tagparser.svg)](https://pkg.go.dev/github.com/talav/tagparser)
 [![Go Report Card](https://goreportcard.com/badge/github.com/talav/tagparser)](https://goreportcard.com/report/github.com/talav/tagparser)
 [![CI](https://github.com/talav/tagparser/workflows/Tagparser%20CI/badge.svg)](https://github.com/talav/tagparser/actions)
@@ -11,13 +11,13 @@ A high-performance, production-ready parser for Go struct tags with comprehensiv
 
 ## Features
 
-- ✅ **Strict parsing** with precise error positions
-- ✅ **Zero-allocation mode** for performance-critical code
-- ✅ **Quoted values** with escape sequences
-- ✅ **Flexible syntax** supporting both named and options-only modes
-- ✅ **Battle-tested** with extensive test coverage and fuzzing
-- ✅ **DoS protection** with configurable size limits
-- ✅ **No dependencies** (except testing)
+- **Strict parsing** with precise error positions
+- **Zero-allocation mode** for performance-critical code
+- **Quoted values** with escape sequences
+- **Flexible syntax** supporting both named and options-only modes
+- **Battle-tested** with extensive test coverage and fuzzing
+- **DoS protection** with configurable size limits
+- **No dependencies** (except testing)
 
 ## Installation
 
@@ -273,12 +273,3 @@ Contributions are welcome! Please:
 
 See [LICENSE](LICENSE) file for details.
 
-## Credits
-
-Developed by [Talav](https://github.com/talav).
-
----
-
-**Questions?** Open an issue or discussion on GitHub.
-
-**Found a bug?** Please report it with a minimal reproduction case.
