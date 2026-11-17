@@ -1,5 +1,5 @@
 # Start from the same base image
-FROM qmcgaw/godevcontainer:debian
+FROM qmcgaw/godevcontainer:v0.22.0-debian
 
 # Install Go development tools (build-time, cached in image)
 # These don't need the mounted workspace, so install them at build time
